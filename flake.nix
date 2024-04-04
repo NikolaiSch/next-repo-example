@@ -1,33 +1,25 @@
-# https://github.com/nix-community/dream2nix/blob/main/examples/packages/languages/nodejs-local-development-nextjs/flake.nix
 {
-  description = "My example flake with dream2nix packages";
+  description = "A very basic flake";
 
   inputs = {
-    dream2nix.url = "github:nix-community/dream2nix";
-    nixpkgs.follows = "dream2nix/nixpkgs";
+    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = inputs @ {
-    self,
-    dream2nix,
-    nixpkgs,
-    ...
-  }: let
-    system = "aarch64-darwin";
-  in {
-    # All packages defined in ./packages/<name> are automatically added to the flake outputs
-    # e.g., 'packages/hello/default.nix' becomes '.#packages.hello'
-    packages.${system}.default = dream2nix.lib.evalModules {
-      packageSets.nixpkgs = inputs.dream2nix.inputs.nixpkgs.legacyPackages.${system};
-      modules = [
-        ./default.nix
+  outputs = { self, nixpkgs, flake-utils, ... }: {
+    flake-utils.lib.eachDefaultSystem = (system: 
+        let pkgs = nixpkgs.legacyPackages.${system}; in
         {
-          paths.projectRoot = ./.;
-          # can be changed to ".git" or "flake.nix" to get rid of .project-root
-          paths.projectRootFile = "flake.nix";
-          paths.package = ./.;
+           defaultPackage.${system} = derivation {
+              name = "next.js builder";
+              system = system;
+              builder = "${pkgs.bash}/bin/bash";
+              args = [ ./builder.sh ];
+              inherit pkgs;
+            }; 
         }
-      ];
-    };
+    );
+    
+
   };
 }
