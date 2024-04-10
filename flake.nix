@@ -2,15 +2,22 @@
   description = "My flake with dream2nix packages";
 
   inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
     dream2nix.url = "github:nix-community/dream2nix";
     nixpkgs.follows = "dream2nix/nixpkgs";
+    nixos-generators = {
+      url = "github:nix-community/nixos-generators";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
+  
 
   outputs =
     inputs@{
       self,
       dream2nix,
       nixpkgs,
+      nixos-generators,
       ...
     }:
     let
@@ -43,6 +50,10 @@
       packages.${system} = {
         default = package;
         start-next = shellScript;
+        azure = nixos-generators.nixosGenerate {
+          system = "x86_64-linux";
+          format = "azure";
+        };
       };
 
       nixosConfigurations.default = nixpkgs.lib.nixosSystem {
