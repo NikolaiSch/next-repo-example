@@ -21,7 +21,7 @@
       ...
     }:
     let
-      system = "aarch64-darwin";
+      system = "x86_64-linux";
       pkgs = import nixpkgs { inherit system; };
       package = dream2nix.lib.evalModules {
         packageSets.nixpkgs = inputs.dream2nix.inputs.nixpkgs.legacyPackages.${system};
